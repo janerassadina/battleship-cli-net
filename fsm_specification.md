@@ -19,6 +19,7 @@ stateDiagram-v2
     EVALUATE_MOVE --> PLAYER_TURN: Invalid Move (Send ERROR to Client)
     EVALUATE_MOVE --> GAME_OVER: Victory or Draw Detected
     EVALUATE_MOVE --> PENDING_WIN: Player 1 Sinks Last Ship (Player 2 Gets Final Turn)
+    PENDING_WIN --> PENDING_WIN: Out-Of-Turn MOVE (Send ERROR to Client)
     PENDING_WIN --> GAME_OVER: Disconnect/Connection Lost
     PENDING_WIN --> EVALUATE_MOVE: Player 2 Sends Final Move
     GAME_OVER --> CLEANUP: Broadcast Final Results 

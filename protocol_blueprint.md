@@ -8,6 +8,8 @@
 ### 1.1 Framing Rule:
 Every message is preceded by a 4-byte header that specifies the exact byte length of the payload that follows. The receiver first reads exactly the 4-byte header to determine payload size N, and then reads exactly N bytes (the payload) from the stream before parsing. 
 
+Even if multiple messages arrive together in a single `recv()` chunk, the receiver reads the first 4-byte header to get the length of the first message, reads exactly that many bytes, then repeats for the second message. If a message arrives split across several chunks, the receiver keeps reading until it has all N bytes.
+
 ### 1.2 Wire Stream Example:
 [4-Byte Length: 0x00000045 (69 bytes)] 
 {"msg_type":"CONNECT","player_id":"Alice","timestamp":1727000000}
