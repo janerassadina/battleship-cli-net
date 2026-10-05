@@ -191,3 +191,13 @@ outcome is either WIN, DRAW, or FORFEIT. winner is null when outcome is DRAW. re
 - In every case, the opponent gets GAME_OVER with outcome = "FORFEIT" and reason = "OPPONENT_DISCONNECTED".
 - The receive loop must treat a 0-byte read (b"") as EOF and stop reading, otherwise recv() would keep returning
    b"" immediately and the loop spins at 100% CPU
+- Example of how the receiver handles both cases: 
+```python
+    try:
+        msg = recv_message(sock)
+        if msg is None:
+            handle_disconnect(player_id)
+    except (ConnectionResetError, BrokenPipeError, ConnectionAbortedError, TimeoutError) as e:
+        logger.warning(f"Connection lost abruptly: {e}")
+        handle_disconnect(player_id)
+```
