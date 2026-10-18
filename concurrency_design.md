@@ -16,6 +16,27 @@ Both client threads read and change the same game state: the boards, whose turn 
 
 With only one lock, deadlock between locks can't happen. If a send fails inside the locked block, the error is caught and noted, and the disconnect is handled after the lock is released. That way a thread never tries to take a lock it already holds. 
 
-## 2. Client State & Turn Synchronization Scheme
+## 3. Client State & Turn Synchronization Scheme
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client1 as Client 1 (Player 1)
+    participant Server as Game Server
+    actor Client2 as Client 2 (Player 2)
 
-## 3. Score & Leaderboard Synchronization Design
+    Client1->>Server: MOVE (row: 0, col: 2)
+    Note over Server: Set game_lock<br>Server validates: Is it Client 1's turn?<br>Is cell (0,2) valid and not guessed yet?
+    alt Out of Turn Move / Invalid
+        Server-->>Client1: ERROR (OUT_OF_TURN_MOVE, INVALID_COORDINATES, or CELL_ALREADY_GUESSED)
+    else Valid Move: HIT or SUNK
+        Note over Server: Update boards and stats<br>Record sunk ship if any<br>Player 1 goes again
+        Server-->>Client1: STATE_UPDATE (HIT, Turn: Player 1)
+        Server-->>Client2: STATE_UPDATE (HIT, Turn: Player 1)
+    else Valid Move: MISS
+        Note over Server: Update boards and stats<br>Switch active turn to Player 2
+        Server-->>Client1: STATE_UPDATE (MISS, Turn: Player 2)
+        Server-->>Client2: STATE_UPDATE (MISS, Turn: Player 2)
+    end
+    Note over Server: If the move decides the game, the server also<br>sends GAME_OVER (outcome, stats) to both clients
+    Note over Server: Release game_lock
+```
